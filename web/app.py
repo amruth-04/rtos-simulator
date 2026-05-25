@@ -2,6 +2,7 @@ from flask import Flask, render_template
 from flask_socketio import SocketIO
 from threading import Thread
 import time
+import os
 
 from web.socket_handler import run_simulation
 
@@ -9,13 +10,18 @@ app = Flask(__name__)
 
 app.config["SECRET_KEY"] = "secret!"
 
-socketio = SocketIO(app)
+socketio = SocketIO(
 
-# Current scheduling algorithm
+    app,
+
+    cors_allowed_origins="*"
+)
+
+# Current algorithm
 
 current_algorithm = "Round Robin"
 
-# Dummy tasks
+# Tasks
 
 tasks = [
 
@@ -38,7 +44,7 @@ tasks = [
     }
 ]
 
-# Dummy resources
+# Resources
 
 resources = [
 
@@ -84,7 +90,7 @@ def index():
     )
 
 
-# Handle algorithm switching
+# Handle algorithm changes
 
 @socketio.on("algorithm_change")
 def algorithm_change(data):
@@ -98,30 +104,30 @@ def algorithm_change(data):
         f"\nSwitched to: {current_algorithm}\n"
     )
 
-    thread = Thread(
+    simulation_thread = Thread(
 
         target=run_simulation,
 
         args=(socketio, current_algorithm)
     )
 
-    thread.start()
+    simulation_thread.start()
 
 
-# Start initial simulation
+# Background simulation loop
 
 def start_background_simulation():
 
     while True:
 
-        thread = Thread(
+        simulation_thread = Thread(
 
             target=run_simulation,
 
             args=(socketio, current_algorithm)
         )
 
-        thread.start()
+        simulation_thread.start()
 
         time.sleep(10)
 
@@ -137,13 +143,21 @@ if __name__ == "__main__":
 
     background_thread.start()
 
+    # IMPORTANT:
+    # Use Render dynamic port
+
+    port = int(
+
+        os.environ.get("PORT", 5000)
+    )
+
     socketio.run(
 
         app,
 
         host="0.0.0.0",
 
-        port=5000,
+        port=port,
 
-        debug=True
+        debug=False
     )
