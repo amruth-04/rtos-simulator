@@ -8,7 +8,7 @@ A real-time RTOS scheduling simulator with live task visualization, multiple sch
 
 Add your uploaded demo video link here later.
 
-Example:
+https://github.com/user-attachments/assets/ba8b81a5-24ed-472e-87a5-32a524607e6f
 
 https://github.com/user-attachments/assets/demo.mp4
 
