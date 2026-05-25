@@ -4,16 +4,6 @@ A real-time RTOS scheduling simulator with live task visualization, multiple sch
 
 ---
 
-# Demo
-
-Add your uploaded demo video link here later.
-
-https://github.com/user-attachments/assets/ba8b81a5-24ed-472e-87a5-32a524607e6f
-
-https://github.com/user-attachments/assets/demo.mp4
-
----
-
 # Features
 
 - Round Robin Scheduling
@@ -57,19 +47,6 @@ https://github.com/user-attachments/assets/demo.mp4
 
 ---
 
-# Dashboard Preview
-
-## Main Dashboard
-
-Add screenshot here later.
-
-Example:
-
-```md
-![Dashboard](static/screenshots/dashboard.png)
-```
-
----
 
 # Architecture
 
@@ -87,31 +64,6 @@ Real-Time Gantt Visualization
 
 ---
 
-# Installation
-
-## Clone Repository
-
-```bash
-git clone https://github.com/yourusername/rtos-simulator.git
-```
-
-## Enter Project Folder
-
-```bash
-cd rtos-simulator
-```
-
-## Install Dependencies
-
-```bash
-pip install -r requirements.txt
-```
-
-## Run Project
-
-```bash
-python -m web.app
-```
 
 ---
 
@@ -146,26 +98,11 @@ python -m web.app
 - Docker deployment
 - Cloud deployment with monitoring
 
----
-
-# Screenshots
-
-Add screenshots here later.
-
-Example:
-
-```md
-![Dashboard](static/screenshots/dashboard.png)
-```
-
----
 
 # Author
 
 Your Name
-
+Amruth Shirin KH
 ---
 
-# License
 
-MIT License
