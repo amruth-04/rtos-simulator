@@ -17,11 +17,11 @@ socketio = SocketIO(
     cors_allowed_origins="*"
 )
 
-# Current algorithm
+# Current scheduling algorithm
 
 current_algorithm = "Round Robin"
 
-# Tasks
+# Task list
 
 tasks = [
 
@@ -44,7 +44,7 @@ tasks = [
     }
 ]
 
-# Resources
+# Resource ownership
 
 resources = [
 
@@ -61,7 +61,7 @@ resources = [
     }
 ]
 
-# Metrics
+# Dashboard metrics
 
 metrics = {
 
@@ -90,7 +90,7 @@ def index():
     )
 
 
-# Handle algorithm changes
+# Handle algorithm switching
 
 @socketio.on("algorithm_change")
 def algorithm_change(data):
@@ -143,8 +143,7 @@ if __name__ == "__main__":
 
     background_thread.start()
 
-    # IMPORTANT:
-    # Use Render dynamic port
+    # Render dynamic port
 
     port = int(
 
@@ -159,5 +158,7 @@ if __name__ == "__main__":
 
         port=port,
 
-        debug=False
+        debug=False,
+
+        allow_unsafe_werkzeug=True
     )
