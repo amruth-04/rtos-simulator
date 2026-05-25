@@ -1,3 +1,7 @@
+
+
+https://github.com/user-attachments/assets/dca0a01e-26bb-485a-a86a-0156b1d03292
+
 # RTOS Scheduling Simulator
 
 A real-time RTOS scheduling simulator with live task visualization, multiple scheduling algorithms, mutex synchronization, deadlock handling, and an interactive monitoring dashboard.
