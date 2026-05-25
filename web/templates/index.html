@@ -1,0 +1,691 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+    <meta charset="UTF-8">
+
+    <meta name="viewport"
+          content="width=device-width, initial-scale=1.0">
+
+    <title>RTOS Simulator Dashboard</title>
+
+    <script src="https://cdn.socket.io/4.5.4/socket.io.min.js"></script>
+
+    <style>
+
+        * {
+
+            margin: 0;
+            padding: 0;
+
+            box-sizing: border-box;
+        }
+
+        body {
+
+            font-family: "Segoe UI", sans-serif;
+
+            background:
+                radial-gradient(circle at top,
+                    #1a0000,
+                    #050505 45%);
+
+            color: white;
+
+            min-height: 100vh;
+
+            overflow-x: hidden;
+        }
+
+        /* Navbar */
+
+        .navbar {
+
+            width: 100%;
+
+            padding: 24px;
+
+            text-align: center;
+
+            font-size: 34px;
+
+            font-weight: 700;
+
+            letter-spacing: 2px;
+
+            color: white;
+
+            backdrop-filter: blur(10px);
+
+            background: rgba(20,20,20,0.65);
+
+            border-bottom: 1px solid rgba(255,0,0,0.25);
+
+            box-shadow:
+                0 0 25px rgba(255,0,0,0.12);
+        }
+
+        .container {
+
+            padding: 40px;
+
+            max-width: 1500px;
+
+            margin: auto;
+        }
+
+        /* Top Bar */
+
+        .top-bar {
+
+            display: flex;
+
+            justify-content: space-between;
+
+            align-items: center;
+
+            margin-bottom: 40px;
+        }
+
+        .top-bar h2 {
+
+            font-size: 30px;
+
+            font-weight: 600;
+
+            color: #ffffff;
+        }
+
+        select {
+
+            background: rgba(20,20,20,0.85);
+
+            color: white;
+
+            border: 1px solid rgba(255,0,0,0.35);
+
+            padding: 12px 18px;
+
+            border-radius: 12px;
+
+            font-size: 15px;
+
+            outline: none;
+
+            transition: 0.3s ease;
+
+            backdrop-filter: blur(10px);
+        }
+
+        select:hover {
+
+            box-shadow:
+                0 0 15px rgba(255,0,0,0.35);
+        }
+
+        /* Glass Cards */
+
+        .glass {
+
+            background:
+                rgba(20,20,20,0.6);
+
+            backdrop-filter: blur(14px);
+
+            border:
+                1px solid rgba(255,255,255,0.06);
+
+            box-shadow:
+                0 0 25px rgba(255,0,0,0.08);
+
+            border-radius: 18px;
+        }
+
+        /* Metrics */
+
+        .metrics-grid {
+
+            display: grid;
+
+            grid-template-columns:
+                repeat(auto-fit, minmax(230px, 1fr));
+
+            gap: 24px;
+
+            margin-bottom: 45px;
+        }
+
+        .metric-card {
+
+            padding: 24px;
+
+            transition: 0.3s ease;
+        }
+
+        .metric-card:hover {
+
+            transform: translateY(-5px);
+
+            box-shadow:
+                0 0 30px rgba(255,0,0,0.15);
+        }
+
+        .metric-title {
+
+            color: #9a9a9a;
+
+            margin-bottom: 12px;
+
+            font-size: 14px;
+
+            text-transform: uppercase;
+
+            letter-spacing: 1px;
+        }
+
+        .metric-value {
+
+            font-size: 34px;
+
+            font-weight: bold;
+
+            color: #ff3434;
+        }
+
+        /* Tasks */
+
+        .cards {
+
+            display: grid;
+
+            grid-template-columns:
+                repeat(auto-fit, minmax(280px, 1fr));
+
+            gap: 24px;
+        }
+
+        .card {
+
+            padding: 24px;
+
+            transition: 0.3s ease;
+        }
+
+        .card:hover {
+
+            transform: translateY(-6px);
+
+            box-shadow:
+                0 0 30px rgba(255,0,0,0.14);
+        }
+
+        .card h2 {
+
+            margin-bottom: 18px;
+
+            font-size: 24px;
+        }
+
+        .status {
+
+            font-size: 22px;
+
+            font-weight: bold;
+        }
+
+        .RUNNING {
+
+            color: #ff3b3b;
+
+            text-shadow:
+                0 0 10px rgba(255,0,0,0.4);
+        }
+
+        .READY {
+
+            color: #ffffff;
+        }
+
+        .BLOCKED {
+
+            color: #ff9b9b;
+        }
+
+        .FINISHED {
+
+            color: #888;
+        }
+
+        /* Resources */
+
+        .resources {
+
+            margin-top: 45px;
+
+            padding: 28px;
+        }
+
+        .resources h2 {
+
+            margin-bottom: 20px;
+        }
+
+        .resource-item {
+
+            background:
+                rgba(255,255,255,0.03);
+
+            border-left:
+                4px solid #ff2e2e;
+
+            padding: 18px;
+
+            margin-top: 12px;
+
+            border-radius: 12px;
+
+            transition: 0.3s ease;
+        }
+
+        .resource-item:hover {
+
+            background:
+                rgba(255,0,0,0.08);
+        }
+
+        /* Gantt Chart */
+
+        .timeline {
+
+            margin-top: 45px;
+
+            padding: 28px;
+        }
+
+        .timeline h2 {
+
+            margin-bottom: 20px;
+        }
+
+        .timeline-box {
+
+            display: flex;
+
+            flex-wrap: wrap;
+
+            gap: 12px;
+
+            margin-top: 30px;
+        }
+
+        .task-box {
+
+            min-width: 80px;
+
+            padding: 16px;
+
+            border-radius: 14px;
+
+            text-align: center;
+
+            font-weight: bold;
+
+            position: relative;
+
+            animation: fadeIn 0.35s ease;
+
+            box-shadow:
+                0 0 18px rgba(255,0,0,0.18);
+        }
+
+        .time-label {
+
+            position: absolute;
+
+            bottom: -22px;
+
+            left: 50%;
+
+            transform: translateX(-50%);
+
+            color: #888;
+
+            font-size: 12px;
+        }
+
+        @keyframes fadeIn {
+
+            from {
+
+                opacity: 0;
+
+                transform:
+                    translateY(10px)
+                    scale(0.95);
+            }
+
+            to {
+
+                opacity: 1;
+
+                transform:
+                    translateY(0)
+                    scale(1);
+            }
+        }
+
+    </style>
+
+</head>
+
+<body>
+
+    <div class="navbar">
+
+        RTOS Simulator Dashboard
+
+    </div>
+
+    <div class="container">
+
+        <div class="top-bar">
+
+            <h2>Real-Time Scheduling Monitor</h2>
+
+            <select id="algorithmSelect">
+
+                <option>Round Robin</option>
+
+                <option>Priority Scheduling</option>
+
+                <option>FCFS</option>
+
+                <option>SJF</option>
+
+            </select>
+
+        </div>
+
+        <!-- Metrics -->
+
+        <div class="metrics-grid">
+
+            <div class="metric-card glass">
+
+                <div class="metric-title">
+
+                    CPU Utilization
+
+                </div>
+
+                <div class="metric-value"
+                     id="cpuUtilization">
+
+                    {{ metrics.cpu_utilization }}
+
+                </div>
+
+            </div>
+
+            <div class="metric-card glass">
+
+                <div class="metric-title">
+
+                    Context Switches
+
+                </div>
+
+                <div class="metric-value"
+                     id="contextSwitches">
+
+                    {{ metrics.context_switches }}
+
+                </div>
+
+            </div>
+
+            <div class="metric-card glass">
+
+                <div class="metric-title">
+
+                    Completed Tasks
+
+                </div>
+
+                <div class="metric-value"
+                     id="completedTasks">
+
+                    {{ metrics.completed_tasks }}
+
+                </div>
+
+            </div>
+
+            <div class="metric-card glass">
+
+                <div class="metric-title">
+
+                    Active Algorithm
+
+                </div>
+
+                <div class="metric-value"
+                     id="activeAlgorithm">
+
+                    {{ metrics.algorithm }}
+
+                </div>
+
+            </div>
+
+        </div>
+
+        <!-- Task Cards -->
+
+        <div class="cards">
+
+            {% for task in tasks %}
+
+            <div class="card glass">
+
+                <h2>{{ task.name }}</h2>
+
+                <div id="{{ task.name }}"
+                     class="status {{ task.state }}">
+
+                    {{ task.state }}
+
+                </div>
+
+            </div>
+
+            {% endfor %}
+
+        </div>
+
+        <!-- Resources -->
+
+        <div class="resources glass">
+
+            <h2>Resource Ownership</h2>
+
+            {% for resource in resources %}
+
+            <div class="resource-item">
+
+                {{ resource.resource }}
+                →
+                {{ resource.owner }}
+
+            </div>
+
+            {% endfor %}
+
+        </div>
+
+        <!-- Gantt Chart -->
+
+        <div class="timeline glass">
+
+            <h2>CPU Gantt Chart</h2>
+
+            <div class="timeline-box"
+                 id="ganttChart">
+
+            </div>
+
+        </div>
+
+    </div>
+
+    <script>
+
+        const socket = io("http://127.0.0.1:5000");
+
+        let currentTime = 0;
+
+        socket.on("timeline_update", (data) => {
+
+            const ganttChart =
+                document.getElementById("ganttChart");
+
+            const taskDiv =
+                document.createElement("div");
+
+            taskDiv.className = "task-box";
+
+            // Premium Colors
+
+            if (data.task === "A") {
+
+                taskDiv.style.background =
+                    "linear-gradient(135deg,#ff1e1e,#7f0000)";
+            }
+
+            else if (data.task === "B") {
+
+                taskDiv.style.background =
+                    "linear-gradient(135deg,#ffffff,#bdbdbd)";
+
+                taskDiv.style.color = "#000";
+            }
+
+            else if (data.task === "C") {
+
+                taskDiv.style.background =
+                    "linear-gradient(135deg,#8b0000,#2b0000)";
+            }
+
+            else {
+
+                taskDiv.style.background =
+                    "linear-gradient(135deg,#444,#111)";
+            }
+
+            taskDiv.innerHTML = `
+
+                ${data.task}
+
+                <div class="time-label">
+
+                    ${currentTime}
+
+                </div>
+
+            `;
+
+            ganttChart.appendChild(taskDiv);
+
+            currentTime++;
+
+        });
+
+        socket.on("task_update", (data) => {
+
+            const taskElement =
+                document.getElementById(data.name);
+
+            if (taskElement) {
+
+                taskElement.innerText = data.state;
+
+                taskElement.className =
+                    "status " + data.state;
+            }
+
+        });
+
+        socket.on("metrics_update", (data) => {
+
+            document.getElementById(
+                "cpuUtilization"
+            ).innerText = data.cpu_utilization;
+
+            document.getElementById(
+                "contextSwitches"
+            ).innerText = data.context_switches;
+
+            document.getElementById(
+                "completedTasks"
+            ).innerText = data.completed_tasks;
+
+            document.getElementById(
+                "activeAlgorithm"
+            ).innerText = data.algorithm;
+
+        });
+
+        const selector =
+            document.getElementById("algorithmSelect");
+
+        selector.addEventListener("change", () => {
+
+            document.getElementById(
+                "ganttChart"
+            ).innerHTML = "";
+
+            currentTime = 0;
+
+            document.querySelectorAll(".status")
+                .forEach((item) => {
+
+                item.innerText = "READY";
+
+                item.className = "status READY";
+
+            });
+
+            document.getElementById(
+                "cpuUtilization"
+            ).innerText = "0%";
+
+            document.getElementById(
+                "contextSwitches"
+            ).innerText = "0";
+
+            document.getElementById(
+                "completedTasks"
+            ).innerText = "0";
+
+            document.getElementById(
+                "activeAlgorithm"
+            ).innerText = selector.value;
+
+            socket.emit(
+
+                "algorithm_change",
+
+                {
+
+                    algorithm: selector.value
+                }
+            );
+
+        });
+
+    </script>
+
+</body>
+
+</html>
