@@ -8,7 +8,8 @@ from scheduler.simulator import (
 
 def run_simulation(socketio, algorithm):
 
-    # Select scheduler
+    # Select scheduling algorithm
+
     if algorithm == "Round Robin":
 
         simulation = round_robin_simulation()
@@ -26,15 +27,21 @@ def run_simulation(socketio, algorithm):
         simulation = priority_simulation()
 
     # Metrics
+
     completed_tasks = 0
+
     context_switches = 0
+
     cpu_utilization = 0
 
     previous_task = None
 
+    # Run simulation
+
     for task_name, state in simulation:
 
         # Context switch tracking
+
         if previous_task != task_name:
 
             context_switches += 1
@@ -42,11 +49,13 @@ def run_simulation(socketio, algorithm):
         previous_task = task_name
 
         # Completed task tracking
+
         if state == "FINISHED":
 
             completed_tasks += 1
 
-        # Fake CPU utilization growth
+        # Fake CPU utilization
+
         cpu_utilization = min(
 
             cpu_utilization + 10,
@@ -55,6 +64,7 @@ def run_simulation(socketio, algorithm):
         )
 
         # Task state update
+
         socketio.emit(
 
             "task_update",
@@ -62,35 +72,43 @@ def run_simulation(socketio, algorithm):
             {
 
                 "name": task_name,
+
                 "state": state
             }
         )
 
-        # Timeline update
+        # IMPORTANT FIX:
+        # Send FULL task name
+
         socketio.emit(
 
             "timeline_update",
 
             {
 
-                "task": task_name[0]
+                "task": task_name
             }
         )
 
-        # Live metrics update
+        # Metrics update
+
         socketio.emit(
 
             "metrics_update",
 
             {
 
-                "cpu_utilization": f"{cpu_utilization}%",
+                "cpu_utilization":
+                    f"{cpu_utilization}%",
 
-                "context_switches": context_switches,
+                "context_switches":
+                    context_switches,
 
-                "completed_tasks": completed_tasks,
+                "completed_tasks":
+                    completed_tasks,
 
-                "algorithm": algorithm
+                "algorithm":
+                    algorithm
             }
         )
 

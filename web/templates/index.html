@@ -38,8 +38,6 @@
             overflow-x: hidden;
         }
 
-        /* Navbar */
-
         .navbar {
 
             width: 100%;
@@ -75,8 +73,6 @@
             margin: auto;
         }
 
-        /* Top Bar */
-
         .top-bar {
 
             display: flex;
@@ -93,8 +89,6 @@
             font-size: 30px;
 
             font-weight: 600;
-
-            color: #ffffff;
         }
 
         select {
@@ -112,19 +106,7 @@
             font-size: 15px;
 
             outline: none;
-
-            transition: 0.3s ease;
-
-            backdrop-filter: blur(10px);
         }
-
-        select:hover {
-
-            box-shadow:
-                0 0 15px rgba(255,0,0,0.35);
-        }
-
-        /* Glass Cards */
 
         .glass {
 
@@ -142,8 +124,6 @@
             border-radius: 18px;
         }
 
-        /* Metrics */
-
         .metrics-grid {
 
             display: grid;
@@ -159,16 +139,6 @@
         .metric-card {
 
             padding: 24px;
-
-            transition: 0.3s ease;
-        }
-
-        .metric-card:hover {
-
-            transform: translateY(-5px);
-
-            box-shadow:
-                0 0 30px rgba(255,0,0,0.15);
         }
 
         .metric-title {
@@ -180,8 +150,6 @@
             font-size: 14px;
 
             text-transform: uppercase;
-
-            letter-spacing: 1px;
         }
 
         .metric-value {
@@ -192,8 +160,6 @@
 
             color: #ff3434;
         }
-
-        /* Tasks */
 
         .cards {
 
@@ -208,16 +174,6 @@
         .card {
 
             padding: 24px;
-
-            transition: 0.3s ease;
-        }
-
-        .card:hover {
-
-            transform: translateY(-6px);
-
-            box-shadow:
-                0 0 30px rgba(255,0,0,0.14);
         }
 
         .card h2 {
@@ -237,9 +193,6 @@
         .RUNNING {
 
             color: #ff3b3b;
-
-            text-shadow:
-                0 0 10px rgba(255,0,0,0.4);
         }
 
         .READY {
@@ -257,18 +210,11 @@
             color: #888;
         }
 
-        /* Resources */
-
         .resources {
 
             margin-top: 45px;
 
             padding: 28px;
-        }
-
-        .resources h2 {
-
-            margin-bottom: 20px;
         }
 
         .resource-item {
@@ -284,28 +230,13 @@
             margin-top: 12px;
 
             border-radius: 12px;
-
-            transition: 0.3s ease;
         }
-
-        .resource-item:hover {
-
-            background:
-                rgba(255,0,0,0.08);
-        }
-
-        /* Gantt Chart */
 
         .timeline {
 
             margin-top: 45px;
 
             padding: 28px;
-        }
-
-        .timeline h2 {
-
-            margin-bottom: 20px;
         }
 
         .timeline-box {
@@ -481,7 +412,7 @@
 
         </div>
 
-        <!-- Task Cards -->
+        <!-- Tasks -->
 
         <div class="cards">
 
@@ -524,7 +455,7 @@
 
         </div>
 
-        <!-- Gantt Chart -->
+        <!-- Gantt -->
 
         <div class="timeline glass">
 
@@ -545,6 +476,12 @@
 
         let currentTime = 0;
 
+        socket.on("connect", () => {
+
+            console.log("Connected");
+
+        });
+
         socket.on("timeline_update", (data) => {
 
             const ganttChart =
@@ -555,15 +492,21 @@
 
             taskDiv.className = "task-box";
 
-            // Premium Colors
+            let cleanTask = "X";
 
-            if (data.task === "A") {
+            if (data.task) {
+
+                cleanTask =
+                    data.task.replace("Task", "");
+            }
+
+            if (cleanTask === "A") {
 
                 taskDiv.style.background =
                     "linear-gradient(135deg,#ff1e1e,#7f0000)";
             }
 
-            else if (data.task === "B") {
+            else if (cleanTask === "B") {
 
                 taskDiv.style.background =
                     "linear-gradient(135deg,#ffffff,#bdbdbd)";
@@ -571,7 +514,7 @@
                 taskDiv.style.color = "#000";
             }
 
-            else if (data.task === "C") {
+            else if (cleanTask === "C") {
 
                 taskDiv.style.background =
                     "linear-gradient(135deg,#8b0000,#2b0000)";
@@ -580,12 +523,12 @@
             else {
 
                 taskDiv.style.background =
-                    "linear-gradient(135deg,#444,#111)";
+                    "linear-gradient(135deg,#333,#111)";
             }
 
             taskDiv.innerHTML = `
 
-                ${data.task}
+                ${cleanTask}
 
                 <div class="time-label">
 
@@ -646,31 +589,6 @@
             ).innerHTML = "";
 
             currentTime = 0;
-
-            document.querySelectorAll(".status")
-                .forEach((item) => {
-
-                item.innerText = "READY";
-
-                item.className = "status READY";
-
-            });
-
-            document.getElementById(
-                "cpuUtilization"
-            ).innerText = "0%";
-
-            document.getElementById(
-                "contextSwitches"
-            ).innerText = "0";
-
-            document.getElementById(
-                "completedTasks"
-            ).innerText = "0";
-
-            document.getElementById(
-                "activeAlgorithm"
-            ).innerText = selector.value;
 
             socket.emit(
 
