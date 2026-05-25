@@ -3,4 +3,4 @@ services:
     name: rtos-simulator
     env: python
     buildCommand: pip install -r requirements.txt
-    startCommand: python -m web.app
+    startCommand: gunicorn --worker-class eventlet -w 1 web.app:app --bind 0.0.0.0:$PORT

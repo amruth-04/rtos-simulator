@@ -1,50 +1,74 @@
-from scheduler.task import Task, TaskState
-from scheduler.scheduler import Scheduler
-from scheduler.mutex import Mutex
+import eventlet
+eventlet.monkey_patch()
+
+from flask import Flask, render_template
+from flask_socketio import SocketIO
+import os
+
+from web.socket_handler import run_simulation
+
+app = Flask(__name__)
+app.config["SECRET_KEY"] = "secret!"
+
+socketio = SocketIO(
+    app,
+    async_mode="eventlet",
+    cors_allowed_origins="*"
+)
+
+current_algorithm = "Round Robin"
+
+tasks = [
+    {"name": "TaskA", "state": "READY"},
+    {"name": "TaskB", "state": "READY"},
+    {"name": "TaskC", "state": "READY"},
+]
+
+resources = [
+    {"resource": "Mutex 1", "owner": "TaskA"},
+    {"resource": "Mutex 2", "owner": "TaskB"},
+]
+
+metrics = {
+    "cpu_utilization": "0%",
+    "context_switches": 0,
+    "completed_tasks": 0,
+    "algorithm": current_algorithm,
+}
 
 
-# Create scheduler
-scheduler = Scheduler()
-
-# Create tasks
-task1 = Task("TaskA", priority=1, burst_time=5)
-task2 = Task("TaskB", priority=2, burst_time=5)
-
-# Create resources
-uart_mutex = Mutex("UART")
-spi_mutex = Mutex("SPI")
+@app.route("/")
+def index():
+    return render_template(
+        "index.html",
+        tasks=tasks,
+        resources=resources,
+        metrics=metrics,
+    )
 
 
-# Initial ownership
-uart_mutex.acquire(task1)
-spi_mutex.acquire(task2)
-
-print(f"{task1.name} acquired UART")
-print(f"{task2.name} acquired SPI")
-
-
-# Deadlock condition
-print("\nDeadlock Scenario:")
-
-# TaskA wants SPI
-if not spi_mutex.acquire(task1):
-
-    print(f"{task1.name} BLOCKED waiting for SPI")
-
-    task1.state = TaskState.BLOCKED
+@socketio.on("algorithm_change")
+def algorithm_change(data):
+    global current_algorithm
+    current_algorithm = data["algorithm"]
+    print(f"\nSwitched to: {current_algorithm}\n")
+    socketio.start_background_task(run_simulation, socketio, current_algorithm)
 
 
-# TaskB wants UART
-if not uart_mutex.acquire(task2):
-
-    print(f"{task2.name} BLOCKED waiting for UART")
-
-    task2.state = TaskState.BLOCKED
+def background_simulation_loop():
+    while True:
+        socketio.start_background_task(run_simulation, socketio, current_algorithm)
+        eventlet.sleep(10)
 
 
-# Add tasks
-scheduler.add_task(task1)
-scheduler.add_task(task2)
+socketio.start_background_task(background_simulation_loop)
 
-# Run scheduler
-scheduler.run()
+
+if __name__ == "__main__":
+    port = int(os.environ.get("PORT", 5000))
+    socketio.run(
+        app,
+        host="0.0.0.0",
+        port=port,
+        debug=False,
+    )
